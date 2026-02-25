@@ -1,0 +1,266 @@
+{% extends "layout.html" %}
+
+{% block title %}Delete Todo — ToDo App{% endblock %}
+
+{% block content %}
+<style>
+    .page-wrapper {
+        min-height: calc(100vh - 64px - 60px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .delete-card {
+        width: 100%;
+        max-width: 460px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 48px 44px;
+        box-shadow: 0 8px 48px rgba(26,22,18,0.07);
+        animation: fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(24px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Warning badge */
+    .delete-badge {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--accent);
+        border: 1px solid rgba(232,93,47,0.25);
+        border-radius: 100px;
+        padding: 5px 14px;
+        margin-bottom: 20px;
+    }
+
+    .delete-card h2 {
+        font-family: 'Playfair Display', serif;
+        font-size: 34px;
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+        color: var(--dark);
+        margin-bottom: 8px;
+    }
+
+    .delete-card h2 em {
+        font-style: italic;
+        color: var(--accent);
+    }
+
+    .delete-subtitle {
+        font-size: 14px;
+        color: var(--muted);
+        font-weight: 300;
+        margin-bottom: 32px;
+    }
+
+    /* Todo preview */
+    .todo-preview {
+        background: var(--cream);
+        border: 1.5px solid var(--border);
+        border-radius: 14px;
+        padding: 18px 20px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .todo-preview-check {
+        width: 24px; height: 24px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+    }
+
+    .check-done {
+        background: rgba(90,158,111,0.15);
+        color: #4a8a5f;
+        border: 1.5px solid rgba(90,158,111,0.3);
+    }
+
+    .check-pending {
+        border: 1.5px solid rgba(232,93,47,0.3);
+        background: rgba(232,93,47,0.06);
+    }
+
+    .todo-preview-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .todo-preview-title {
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--dark);
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .todo-preview-status {
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--muted);
+    }
+
+    .status-dot {
+        display: inline-block;
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        margin-right: 5px;
+        vertical-align: middle;
+        position: relative;
+        top: -1px;
+    }
+
+    .dot-done    { background: #5a9e6f; }
+    .dot-pending { background: var(--accent); }
+
+    /* Warning note */
+    .warning-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        background: rgba(232,93,47,0.06);
+        border: 1px solid rgba(232,93,47,0.15);
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-bottom: 32px;
+        font-size: 13px;
+        color: var(--accent);
+        line-height: 1.5;
+    }
+
+    .warning-note svg {
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    .divider {
+        height: 1px;
+        background: var(--border);
+        margin-bottom: 28px;
+    }
+
+    /* Action buttons */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .btn-delete {
+        flex: 1;
+        padding: 14px;
+        background: var(--accent);
+        color: var(--cream);
+        border: none;
+        border-radius: 100px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-delete:hover {
+        background: #c94d24;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(232,93,47,0.35);
+    }
+
+    .btn-cancel {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 22px;
+        background: transparent;
+        color: var(--muted);
+        border: 1.5px solid var(--border);
+        border-radius: 100px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 14px;
+        font-weight: 400;
+        text-decoration: none;
+        transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+        white-space: nowrap;
+    }
+
+    .btn-cancel:hover {
+        background: var(--cream);
+        color: var(--dark);
+        border-color: rgba(26,22,18,0.15);
+    }
+
+    @media (max-width: 520px) {
+        .delete-card { padding: 36px 24px; }
+    }
+</style>
+
+<div class="page-wrapper">
+    <div class="delete-card">
+
+        <span class="delete-badge">⚠ Heads up</span>
+        <h2>Delete this<br><em>todo?</em></h2>
+        <p class="delete-subtitle">This action cannot be undone.</p>
+
+        <!-- Todo preview -->
+        <div class="todo-preview">
+            <div class="todo-preview-check {% if todo.completed %}check-done{% else %}check-pending{% endif %}">
+                {% if todo.completed %}✓{% endif %}
+            </div>
+            <div class="todo-preview-info">
+                <div class="todo-preview-title">{{ todo.title }}</div>
+                <div class="todo-preview-status">
+                    {% if todo.completed %}
+                        <span class="status-dot dot-done"></span>Completed
+                    {% else %}
+                        <span class="status-dot dot-pending"></span>Pending
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Warning -->
+        <div class="warning-note">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 6v3M8 11h.01M7.1 2.4L1.5 12a1 1 0 00.9 1.5h11.2a1 1 0 00.9-1.5L8.9 2.4a1 1 0 00-1.8 0z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Once deleted, this task will be permanently removed and cannot be recovered.
+        </div>
+
+        <div class="divider"></div>
+
+        <form action="/delete/{{ todo.id }}" method="post">
+            <div class="form-actions">
+                <button type="submit" class="btn-delete">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M2 3.5h10M5.5 3.5V2.5h3v1M4.5 3.5l.5 8h4l.5-8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Yes, delete it
+                </button>
+                <a href="/" class="btn-cancel">Cancel</a>
+            </div>
+        </form>
+
+    </div>
+</div>
+{% endblock %}

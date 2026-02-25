@@ -1,0 +1,301 @@
+{% extends "layout.html" %}
+
+{% block title %}Add Todo — ToDo App{% endblock %}
+
+{% block content %}
+<style>
+    .page-wrapper {
+        min-height: calc(100vh - 64px - 60px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .add-card {
+        width: 100%;
+        max-width: 480px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 48px 44px;
+        box-shadow: 0 8px 48px rgba(26,22,18,0.07);
+        animation: fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(24px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .add-badge {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--accent);
+        border: 1px solid rgba(232,93,47,0.25);
+        border-radius: 100px;
+        padding: 5px 14px;
+        margin-bottom: 20px;
+    }
+
+    .add-card h2 {
+        font-family: 'Playfair Display', serif;
+        font-size: 34px;
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+        color: var(--dark);
+        margin-bottom: 8px;
+    }
+
+    .add-card h2 em {
+        font-style: italic;
+        color: var(--accent);
+    }
+
+    .add-subtitle {
+        font-size: 14px;
+        color: var(--muted);
+        font-weight: 300;
+        margin-bottom: 36px;
+    }
+
+    /* Field */
+    .field {
+        margin-bottom: 20px;
+    }
+
+    .field label {
+        display: block;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 8px;
+    }
+
+    .field input[type="text"] {
+        width: 100%;
+        padding: 13px 16px;
+        background: var(--cream);
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 15px;
+        color: var(--dark);
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .field input[type="text"]::placeholder {
+        color: rgba(140,130,121,0.45);
+    }
+
+    .field input[type="text"]:focus {
+        border-color: rgba(232,93,47,0.45);
+        box-shadow: 0 0 0 3px rgba(232,93,47,0.08);
+    }
+
+    /* Toggle switch (same as edit page) */
+    .checkbox-field {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--cream);
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin-bottom: 20px;
+        cursor: pointer;
+        transition: border-color 0.2s ease;
+    }
+
+    .checkbox-field:hover {
+        border-color: rgba(232,93,47,0.3);
+    }
+
+    .checkbox-field-label {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .checkbox-field-label span {
+        font-size: 15px;
+        font-weight: 400;
+        color: var(--dark);
+    }
+
+    .checkbox-field-label small {
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 300;
+    }
+
+    .toggle {
+        position: relative;
+        width: 44px;
+        height: 26px;
+        flex-shrink: 0;
+    }
+
+    .toggle input {
+        opacity: 0;
+        width: 0; height: 0;
+        position: absolute;
+    }
+
+    .toggle-track {
+        position: absolute;
+        inset: 0;
+        background: rgba(26,22,18,0.12);
+        border-radius: 100px;
+        transition: background 0.2s ease;
+        cursor: pointer;
+    }
+
+    .toggle-thumb {
+        position: absolute;
+        top: 3px; left: 3px;
+        width: 20px; height: 20px;
+        background: white;
+        border-radius: 50%;
+        box-shadow: 0 1px 4px rgba(26,22,18,0.2);
+        transition: transform 0.2s ease;
+        pointer-events: none;
+    }
+
+    .toggle input:checked ~ .toggle-track { background: #5a9e6f; }
+    .toggle input:checked ~ .toggle-thumb { transform: translateX(18px); }
+
+    .divider {
+        height: 1px;
+        background: var(--border);
+        margin: 28px 0;
+    }
+
+    /* Actions */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .btn-submit {
+        flex: 1;
+        padding: 14px;
+        background: var(--dark);
+        color: var(--cream);
+        border: none;
+        border-radius: 100px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-submit:hover {
+        background: var(--accent);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(232,93,47,0.3);
+    }
+
+    .btn-submit svg {
+        transition: transform 0.2s ease;
+    }
+
+    .btn-submit:hover svg {
+        transform: translateX(2px);
+    }
+
+    .btn-cancel {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 22px;
+        background: transparent;
+        color: var(--muted);
+        border: 1.5px solid var(--border);
+        border-radius: 100px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 14px;
+        font-weight: 400;
+        text-decoration: none;
+        transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+        white-space: nowrap;
+    }
+
+    .btn-cancel:hover {
+        background: var(--cream);
+        color: var(--dark);
+        border-color: rgba(26,22,18,0.15);
+    }
+
+    @media (max-width: 520px) {
+        .add-card { padding: 36px 24px; }
+    }
+</style>
+
+<div class="page-wrapper">
+    <div class="add-card">
+
+        <span class="add-badge">✦ New task</span>
+        <h2>What needs to<br>be <em>done?</em></h2>
+        <p class="add-subtitle">Add a new task to your list.</p>
+
+        <form action="/add" method="post">
+
+            <!-- Title -->
+            <div class="field">
+                <label for="title">Task title</label>
+                <input
+                    type="text"
+                    name="title"
+                    id="title"
+                    placeholder="e.g. Buy groceries, Read a book…"
+                    required
+                    autofocus
+                >
+            </div>
+
+            <!-- Completed toggle -->
+            <div class="field">
+                <label>Status</label>
+            </div>
+            <label class="checkbox-field" for="completed">
+                <div class="checkbox-field-label">
+                    <span>Mark as completed</span>
+                    <small>Toggle on if already done</small>
+                </div>
+                <div class="toggle">
+                    <input type="checkbox" name="completed" id="completed">
+                    <div class="toggle-track"></div>
+                    <div class="toggle-thumb"></div>
+                </div>
+            </label>
+
+            <div class="divider"></div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">
+                    Add todo
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="/" class="btn-cancel">← Back</a>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,395 @@
+{% extends "layout.html" %}
+
+{% block title %}My Todos — ToDo App{% endblock %}
+
+{% block content %}
+<style>
+    .page-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        margin-bottom: 36px;
+        flex-wrap: wrap;
+        gap: 16px;
+        animation: fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-header-left .eyebrow {
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 8px;
+    }
+
+    .page-header-left h2 {
+        font-family: 'Playfair Display', serif;
+        font-size: 38px;
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        line-height: 1;
+        color: var(--dark);
+    }
+
+    .page-header-left h2 em {
+        font-style: italic;
+        color: var(--accent);
+    }
+
+    .btn-add {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        background: var(--dark);
+        color: var(--cream);
+        text-decoration: none;
+        border-radius: 100px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        white-space: nowrap;
+        transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .btn-add:hover {
+        background: var(--accent);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(232,93,47,0.3);
+    }
+
+    /* Stats bar */
+    .stats-bar {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+        animation: fadeUp 0.6s 0.08s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    .stat-pill {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 100px;
+        padding: 7px 16px;
+        font-size: 13px;
+        font-weight: 400;
+        color: var(--muted);
+    }
+
+    .stat-pill .dot {
+        width: 7px; height: 7px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .dot-total   { background: var(--dark); opacity: 0.4; }
+    .dot-done    { background: #5a9e6f; }
+    .dot-pending { background: var(--accent); }
+
+    .stat-pill strong {
+        color: var(--dark);
+        font-weight: 600;
+    }
+
+    /* Todo list */
+    .todo-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        list-style: none;
+        animation: fadeUp 0.6s 0.14s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    .todo-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 18px 22px;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .todo-item::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 3px;
+        border-radius: 3px 0 0 3px;
+        background: var(--accent);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .todo-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 24px rgba(26,22,18,0.08);
+        border-color: rgba(26,22,18,0.13);
+    }
+
+    .todo-item:hover::before {
+        opacity: 1;
+    }
+
+    .todo-item.completed {
+        opacity: 0.65;
+    }
+
+    .todo-item.completed::before {
+        background: #5a9e6f;
+        opacity: 1;
+    }
+
+    /* Checkbox visual */
+    .todo-check {
+        width: 22px; height: 22px;
+        border-radius: 50%;
+        border: 2px solid var(--border);
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        transition: border-color 0.2s, background 0.2s;
+    }
+
+    .todo-item.completed .todo-check {
+        background: #5a9e6f;
+        border-color: #5a9e6f;
+        color: white;
+    }
+
+    .todo-item:not(.completed) .todo-check {
+        border-color: rgba(232,93,47,0.35);
+    }
+
+    /* Title */
+    .todo-title {
+        flex: 1;
+        font-size: 15px;
+        font-weight: 400;
+        color: var(--dark);
+        line-height: 1.4;
+    }
+
+    .todo-item.completed .todo-title {
+        text-decoration: line-through;
+        color: var(--muted);
+    }
+
+    /* Status badge */
+    .todo-status {
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 4px 12px;
+        border-radius: 100px;
+        flex-shrink: 0;
+    }
+
+    .status-done {
+        background: rgba(90,158,111,0.12);
+        color: #4a8a5f;
+    }
+
+    .status-pending {
+        background: rgba(232,93,47,0.1);
+        color: var(--accent);
+    }
+
+    /* Actions */
+    .todo-actions {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-shrink: 0;
+    }
+
+    .todo-actions a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px; height: 34px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-size: 14px;
+        transition: background 0.15s ease, transform 0.15s ease;
+    }
+
+    .action-edit {
+        color: var(--muted);
+        background: transparent;
+    }
+
+    .action-edit:hover {
+        background: rgba(26,22,18,0.07);
+        color: var(--dark);
+        transform: scale(1.08);
+    }
+
+    .action-delete {
+        color: rgba(232,93,47,0.5);
+        background: transparent;
+    }
+
+    .action-delete:hover {
+        background: rgba(232,93,47,0.1);
+        color: var(--accent);
+        transform: scale(1.08);
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 72px 24px;
+        animation: fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    .empty-icon {
+        font-size: 48px;
+        margin-bottom: 20px;
+        opacity: 0.4;
+    }
+
+    .empty-state h3 {
+        font-family: 'Playfair Display', serif;
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 10px;
+        letter-spacing: -0.01em;
+    }
+
+    .empty-state p {
+        font-size: 15px;
+        color: var(--muted);
+        font-weight: 300;
+        margin-bottom: 32px;
+    }
+
+    .btn-empty {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 13px 28px;
+        background: var(--dark);
+        color: var(--cream);
+        text-decoration: none;
+        border-radius: 100px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 15px;
+        font-weight: 500;
+        transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-empty:hover {
+        background: var(--accent);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(232,93,47,0.3);
+    }
+
+    @media (max-width: 560px) {
+        .todo-status { display: none; }
+        .todo-item { padding: 14px 16px; gap: 12px; }
+        .page-header-left h2 { font-size: 30px; }
+    }
+</style>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-header-left">
+        <p class="eyebrow">✦ Your tasks</p>
+        <h2>My <em>Todos</em></h2>
+    </div>
+    <a href="/add" class="btn-add">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        Add Todo
+    </a>
+</div>
+
+{% if todos %}
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+        <div class="stat-pill">
+            <span class="dot dot-total"></span>
+            <strong>{{ todos|length }}</strong> total
+        </div>
+        <div class="stat-pill">
+            <span class="dot dot-done"></span>
+            <strong>{{ todos|selectattr("completed")|list|length }}</strong> completed
+        </div>
+        <div class="stat-pill">
+            <span class="dot dot-pending"></span>
+            <strong>{{ todos|rejectattr("completed")|list|length }}</strong> pending
+        </div>
+    </div>
+
+    <!-- Todo Items -->
+    <ul class="todo-list">
+        {% for todo in todos %}
+        <li class="todo-item {% if todo.completed %}completed{% endif %}">
+
+            <div class="todo-check">
+                {% if todo.completed %}✓{% endif %}
+            </div>
+
+            <span class="todo-title">{{ todo.title }}</span>
+
+            {% if todo.completed %}
+                <span class="todo-status status-done">Done</span>
+            {% else %}
+                <span class="todo-status status-pending">Pending</span>
+            {% endif %}
+
+            <div class="todo-actions">
+                <a href="/edit/{{ todo.id }}" class="action-edit" title="Edit">
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                        <path d="M10.5 2.5l2 2-8 8H2.5v-2l8-8z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                <a href="/delete/{{ todo.id }}" class="action-delete" title="Delete">
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                        <path d="M2.5 4.5h10M6 4.5V3h3v1.5M5.5 4.5l.5 7h3l.5-7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+            </div>
+
+        </li>
+        {% endfor %}
+    </ul>
+
+{% else %}
+
+    <!-- Empty State -->
+    <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <h3>Nothing here yet.</h3>
+        <p>You're all clear — or maybe just getting started.</p>
+        <a href="/add" class="btn-empty">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            Add your first todo
+        </a>
+    </div>
+
+{% endif %}
+{% endblock %}
